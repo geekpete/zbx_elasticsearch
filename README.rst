@@ -5,7 +5,7 @@ A python zabbix plugin for monitoring Elasticsearch.
 
 Copyright (C) 2014 Peter Dyson pete@geekpete.com
 
-Source: http://github.com/geekpete/zbx_elasticsearch/
+Source: https://github.com/geekpete/zbx_elasticsearch/
 
 Documentation: (TBA)
 
