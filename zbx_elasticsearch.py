@@ -51,8 +51,6 @@ def fetch_stats(api_uri, cache_file, endpoint, port, metric):
         else:
             es_target = 'http://%s:%s' % (endpoint, port)
             stats_req = requests.get(es_target + api_uri)
-            #print stats_req
-            #print vars(stats_req)
             stats = stats_req.text
             f = file(cache_file,'w')
             f.write(stats)
@@ -61,15 +59,11 @@ def fetch_stats(api_uri, cache_file, endpoint, port, metric):
         metric_parts=metric.split('.')
         stats = body
         while len(metric_parts):
-            #stats=stats[metric_parts.pop(0)]
-                #print metric_parts.pop(0)
             stats=stats[metric_parts.pop(0)]
         return stats
     except Exception, e:
         zabbix_fail()
         print str(e)
-
-    #return stats
 
 def main(argv):
 
@@ -102,8 +96,6 @@ def main(argv):
             print fetch_stats(api_uri, cache_file, args.endpoint, args.port, target_metric)
         except Exception, e:
             zabbix_fail()
-            #print "Error:"
-            #print str(e)
     elif args.api == "nodes_stats":
         stats = ""
         # set the nodes_stats URI path
@@ -119,15 +111,8 @@ def main(argv):
 
 
         try:
-            # contruct full metric path using provided node name
-            #  first determine node id from node name by fetching all nodes
+            # fetch nodes_stats page
             nodes = fetch_stats(api_uri, cache_file, args.endpoint, args.port, 'nodes')
-            #print "nodes"
-            #print nodes
-            #print nodes.keys()
-            #print "H8blDPNSRcmQiFeWe6szHg"
-            #print nodes['H8blDPNSRcmQiFeWe6szHg']
-            #print nodes['H8blDPNSRcmQiFeWe6szHg']['name']
         except Exception as e:
             #print "Error: %s" % e.args
             zabbix_fail()
@@ -158,8 +143,6 @@ def main(argv):
         try:
             while len(metric_parts):
                 stats=stats[metric_parts.pop(0)]
-                #print "printing"
-                #print stats
         except Exception as e:
             print "Error: %s" % e.args
         print stats

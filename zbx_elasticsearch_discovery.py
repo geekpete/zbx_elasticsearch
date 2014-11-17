@@ -68,8 +68,6 @@ def fetch_stats(api_uri, cache_file, endpoint, port, metric):
         else:
             es_target = 'http://%s:%s' % (endpoint, port)
             stats_req = requests.get(es_target + api_uri)
-            #print stats_req
-            #print vars(stats_req)
             stats = stats_req.text
             f = file(cache_file,'w')
             f.write(stats)
@@ -78,8 +76,6 @@ def fetch_stats(api_uri, cache_file, endpoint, port, metric):
         metric_parts=metric.split('.')
         stats = body
         while len(metric_parts):
-            #stats=stats[metric_parts.pop(0)]
-                #print metric_parts.pop(0)
             stats=stats[metric_parts.pop(0)]
         return stats
     except Exception, e:
@@ -122,10 +118,8 @@ def main(argv):
         cache_file = cache_location + "/zbx_elasticsearch."  + args.endpoint + "_" + str(args.port) + ".nodes_stats_cache"
 
         try:
-            # contruct full metric path using provided node name
-            #  first determine node id from node name by fetching all nodes
+            # Fetch nodes stats page
             nodes = fetch_stats(api_uri, cache_file, args.endpoint, args.port, 'nodes')
-            #print nodes
         except Exception as e:
             #print "Error: %s" % e.args
             zabbix_fail()

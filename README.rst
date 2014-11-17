@@ -34,3 +34,9 @@ Public License for more details.
 Change Log
 ==========
 0.1.1 - Initial release
+
+Inspiration
+===========
+
+- http://blog.sepa.spb.ru/2014/02/elasticsearch-internals-monitoring-by.html
+- Awesome local caching idea and dot notation conversion for metrics.
