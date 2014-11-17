@@ -31,25 +31,31 @@ import argparse
 # some global settings
 cache_location = "/tmp"
 
-def index_discovery(index_stats):
+def index_discovery(index_stats, endpoint, port):
     index_discovery = []
     for index in index_stats:
-        element = {'{#INDEXNAME}': index}
+        element = {'{#INDEXNAME}': index,
+                   '{#ENDPOINT}': endpoint,
+                   '{#PORT}': port}
         index_discovery.append(element)
-    print json.dumps({'data': index_discovery})
+    print json.dumps({"data": index_discovery})
 
 
-def node_hosts_discovery(node_stats):
+def node_hosts_discovery(node_stats, endpoint, port):
     node_hosts_discovery = []
     for node in node_stats:
-        element = {'{#NODEHOST}': node_stats[node]['host']}
+        element = {'{#NODEHOST}': node_stats[node]['host'],
+                   '{#ENDPOINT}': endpoint,
+                   '{#PORT}': port}
         node_hosts_discovery.append(element)
     print json.dumps({'data': node_hosts_discovery})
 
-def node_names_discovery(node_stats):
+def node_names_discovery(node_stats, endpoint, port):
     node_names_discovery = []
     for node in node_stats:
-        element = {'{#NODENAME}': node_stats[node]['name']}
+        element = {'{#NODENAME}': node_stats[node]['name'],
+                   '{#ENDPOINT}': endpoint,
+                   '{#PORT}': port}
         node_names_discovery.append(element)
     print json.dumps({'data': node_names_discovery})
 
@@ -104,7 +110,7 @@ def main(argv):
         index_stats = fetch_stats(api_uri, cache_file, args.endpoint, args.port, 'indices')
 
         # do node host discovery
-        index_discovery(index_stats)
+        index_discovery(index_stats, args.endpoint, args.port)
 
     else:
         # Do node discovery
@@ -124,10 +130,10 @@ def main(argv):
 
         if args.discovery=="node_names":
             # Do node name discovery
-            node_names_discovery(nodes)
+            node_names_discovery(nodes, args.endpoint, args.port)
         elif args.discovery=="node_hosts":
             # do node host discovery
-            node_hosts_discovery(nodes)
+            node_hosts_discovery(nodes, args.endpoint, args.port)
         else:
             print "not yet implemented"
 
