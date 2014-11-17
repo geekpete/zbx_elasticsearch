@@ -89,8 +89,6 @@ def main(argv):
     parser.add_argument('-e', '--endpoint', type=str, required=True, help='Elasticsearch endpoint to query')
     parser.add_argument('-p', '--port', type=str, required=False, default=9200, help='Optional HTTP port if not 9200')
     parser.add_argument('-d', '--discovery', type=str, required=True, choices=['index','node_names','node_hosts'], help='Perform Elasticsearch Discovery of a specific type')
-    parser.add_argument('--node_hosts', type=str, required=False, help='Discover Node Hosts')
-    parser.add_argument('--node_names', type=str, required=False, help='Discover Node Names')
     args = parser.parse_args()
 
     if args.discovery=="index":
