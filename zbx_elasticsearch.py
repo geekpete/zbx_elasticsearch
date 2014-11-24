@@ -71,7 +71,7 @@ def main(argv):
     parser = argparse.ArgumentParser(description='Zabbix Elasticsearch Plugin')
     parser.add_argument('-e', '--endpoint', type=str, required=True, help='Elasticsearch endpoint to query')
     parser.add_argument('-p', '--port', type=str, required=False, default=9200, help='Optional HTTP port if not 9200')
-    parser.add_argument('-a', '--api', type=str, required=True, default="", help='Stats/Info API to query', choices=['cluster_state','nodes_info','nodes_stats','indices_stats'])
+    parser.add_argument('-a', '--api', type=str, required=True, default="", help='Stats/Info API to query', choices=['cluster_state','cluster_stats','nodes_info','nodes_stats','indices_stats'])
     parser.add_argument('-i', '--index', type=str, required=False, default="", help='Index to fetch metrics against')
     parser.add_argument('-m', '--metric', type=str, required=True, help='metric to fetch, eg. indices.docs.count')
     parser.add_argument('-n', '--node', type=str, required=False, help='node name to fetch metric for if using nodes_stats API, value of nodes.x.name, use either node or host not both')
@@ -146,6 +146,20 @@ def main(argv):
         except Exception as e:
             print "Error: %s" % e.args
         print stats
+    elif args.api == "cluster_stats":
+        # set the indices_stats URI path
+        api_uri = "/_cluster/stats"
+
+        # set the indices_stats cache file location
+        cache_file = cache_location + "/zbx_elasticsearch." + args.endpoint + "_" + str(args.port) + ".cluster_stats_cache"
+
+        # set the target metric as the one specified
+        target_metric = args.metric
+
+        try:
+            print fetch_stats(api_uri, cache_file, args.endpoint, args.port, target_metric)
+        except Exception, e:
+            zabbix_fail()
     else:
         print "not yet implemented"
 
