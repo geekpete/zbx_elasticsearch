@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 __author__ = 'Peter Dyson <pete@geekpete.com>'
-__version__ = '0.1.1'
+__version__ = '0.1.2'
 __license__ = 'GPLv3'
 __source__ = 'http://github.com/geekpete/zbx_elasticsearch/zbx_elasticsearch.py'
 
@@ -9,6 +9,7 @@ __source__ = 'http://github.com/geekpete/zbx_elasticsearch/zbx_elasticsearch.py'
 zbx_elasticsearch - A python zabbix plugin for monitoring elasticsearch.
 
 Copyright (C) 2014 Peter Dyson <pete@geekpete.com>
+Valuable contributions by Norfolkislander.
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -50,7 +51,7 @@ def fetch_stats(api_uri, cache_file, endpoint, port, metric):
             f.close()
         else:
             es_target = 'http://%s:%s' % (endpoint, port)
-            stats_req = requests.get(es_target + api_uri)
+            stats_req = requests.get(es_target + api_uri, stream=True)
             stats = stats_req.text
             f = file(cache_file,'w')
             f.write(stats)
@@ -109,7 +110,6 @@ def main(argv):
             print "nodes_stats API requires either  --node parameter or --host parameter"
             sys.exit(1)
 
-
         try:
             # fetch nodes_stats page
             nodes = fetch_stats(api_uri, cache_file, args.endpoint, args.port, 'nodes')
@@ -144,7 +144,7 @@ def main(argv):
             while len(metric_parts):
                 stats=stats[metric_parts.pop(0)]
         except Exception as e:
-            print "Error: %s" % e.args
+            print "Error: %s" % str(e)
         print stats
     elif args.api == "cluster_stats":
         # set the indices_stats URI path

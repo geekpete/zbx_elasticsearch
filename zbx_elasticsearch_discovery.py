@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 __author__ = 'Peter Dyson <pete@geekpete.com>'
-__version__ = '0.1.1'
+__version__ = '0.1.2'
 __license__ = 'GPLv3'
 __source__ = 'https://github.com/geekpete/zbx_elasticsearch/zbx_elasticsearch_discovery.py'
 
@@ -9,6 +9,7 @@ __source__ = 'https://github.com/geekpete/zbx_elasticsearch/zbx_elasticsearch_di
 zbx_elasticsearch - A python zabbix plugin for monitoring elasticsearch.
 
 Copyright (C) 2014 Peter Dyson <pete@geekpete.com>
+Valuable contributions by Norfolkislander.
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -20,6 +21,7 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
+
 """
 
 
@@ -30,6 +32,14 @@ import argparse
 
 # some global settings
 cache_location = "/tmp"
+
+def cluster_discovery(cluster_stats, endpoint, port):
+    cluster_discovery = []
+    element = {'{#CLUSTERNAME}': cluster_stats['cluster_name'],
+               '{#ENDPOINT}': endpoint,
+               '{#PORT}': port}
+    cluster_discovery.append(element)
+    print json.dumps({"data": cluster_discovery})
 
 def index_discovery(index_stats, endpoint, port):
     index_discovery = []
@@ -64,7 +74,7 @@ def zabbix_fail():
     sys.exit(2)
 
 
-def fetch_stats(api_uri, cache_file, endpoint, port, metric):
+def fetch_stats(api_uri, cache_file, endpoint, port, metric=None):
     try:
         body = ""
         if os.path.isfile(cache_file) and (os.path.getmtime(cache_file) + 30) > time.time():
@@ -73,16 +83,17 @@ def fetch_stats(api_uri, cache_file, endpoint, port, metric):
             f.close()
         else:
             es_target = 'http://%s:%s' % (endpoint, port)
-            stats_req = requests.get(es_target + api_uri)
+            stats_req = requests.get(es_target + api_uri, stream=True)
             stats = stats_req.text
             f = file(cache_file,'w')
             f.write(stats)
             f.close()
             body = json.loads(stats)
-        metric_parts=metric.split('.')
         stats = body
-        while len(metric_parts):
-            stats=stats[metric_parts.pop(0)]
+        if metric:
+            metric_parts=metric.split('.')
+            while len(metric_parts):
+                stats=stats[metric_parts.pop(0)]
         return stats
     except Exception, e:
         zabbix_fail()
@@ -94,10 +105,25 @@ def main(argv):
     parser = argparse.ArgumentParser(description='Zabbix Elasticsearch Discovery Plugin')
     parser.add_argument('-e', '--endpoint', type=str, required=True, help='Elasticsearch endpoint to query')
     parser.add_argument('-p', '--port', type=str, required=False, default=9200, help='Optional HTTP port if not 9200')
-    parser.add_argument('-d', '--discovery', type=str, required=True, choices=['index','node_names','node_hosts'], help='Perform Elasticsearch Discovery of a specific type')
+    parser.add_argument('-d', '--discovery', type=str, required=True, choices=['cluster','index','node_names','node_hosts'], help='Perform Elasticsearch Discovery of a specific type')
     args = parser.parse_args()
 
-    if args.discovery=="index":
+    if args.discovery=="cluster":
+        # Do cluster discovery
+   
+        # set the cluster_stats URI path
+        api_uri = "/_cluster/stats"
+
+        # set the indices_stats cache file location
+        cache_file = cache_location + "/zbx_elasticsearch." + args.endpoint + "_" + str(args.port) + ".cluster_stats_cache"
+
+        # fetch indices stats page
+        cluster_stats = fetch_stats(api_uri, cache_file, args.endpoint, args.port)
+
+        # do node host discovery
+        cluster_discovery(cluster_stats, args.endpoint, args.port)
+
+    elif args.discovery=="index":
         # Do index discovery
 
         # set the indices_stats URI path
@@ -139,3 +165,4 @@ def main(argv):
 
 if __name__ == "__main__":
     main(sys.argv)
+
